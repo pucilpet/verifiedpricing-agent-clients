@@ -1,15 +1,22 @@
 # VerifiedPricing agent clients
 
 Early-access Python REST/CLI client and local MCP stdio gateway for retained,
-source-backed SaaS pricing data. Both packages are version 0.1.0, support
+source-backed SaaS pricing data. Both packages are version 0.1.1, support
 Python 3.10+ on Linux/macOS, and are MIT licensed. Windows is not supported.
 
-API pilot credentials are issued separately. There is no open API sign-up,
-hosted MCP endpoint or hosted OAuth flow. Ask the maintainer for pilot access
-and current endpoint availability. A package download does not activate an
-account or establish live pricing coverage.
+Get your own read key at [VerifiedPricing Account](https://verifiedpricing.com/account).
+Sign in with the email link, explicitly accept the current agent access terms
+and acknowledge the privacy notice, then create a key. The account form initially
+selects `prices:read` and `comparisons:read`; keep `comparisons:read` for comparisons
+and competitor prices. See [Developers](https://verifiedpricing.com/developers)
+for endpoint and scope details. Configure your key with
+`verifiedpricing configure --key-stdin`, or supply `VERIFIEDPRICING_API_KEY` through
+your private environment. Never put a key in command arguments or public files.
+These packages provide REST/CLI and local stdio; they do not implement a hosted
+MCP endpoint or hosted OAuth flow. A package download does not establish live
+pricing coverage.
 
-The account allowance is 1,000 weighted units per day and 10,000 per month shared
+The free account allowance is 1,000 weighted units per day and 10,000 per month shared
 across REST, CLI and MCP. The nine MCP tools cover product search, prices, exact
 snapshots, scenario comparisons, qualified competitors, history, sources,
 reviewed records and usage. They do not start a crawl or refresh discovery.
@@ -17,13 +24,13 @@ reviewed records and usage. They do not start a crawl or refresh discovery.
 ## Distribution and installation
 
 The intended early-access distribution is
-[GitHub prerelease v0.1.0](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.1.0).
+[GitHub prerelease v0.1.1](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.1.1).
 Use only assets and SHA-256 checksums actually listed on that release; it may
 remain unavailable until package gates and publication complete. No PyPI package
 publication or MCP Registry listing is claimed here.
 
-Expected wheel names are `verifiedpricing_client-0.1.0-py3-none-any.whl` and
-`verifiedpricing_mcp-0.1.0-py3-none-any.whl`. The package READMEs explain isolated
+Expected wheel names are `verifiedpricing_client-0.1.1-py3-none-any.whl` and
+`verifiedpricing_mcp-0.1.1-py3-none-any.whl`. The package READMEs explain isolated
 installation after downloading the published assets and verifying their hashes:
 
 - [REST client and CLI](packages/verifiedpricing-client/README.md)

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 - Candidate
+
+- Optional exact competitor product filter in the existing competitor-pricing tool.
+- Pins verifiedpricing-client 0.1.1; retains the official mcp 2.3.0 SDK and nine tools.
+- Keeps REST identities, response coverage and shared weighted quota unchanged.
+
 ## 0.1.0 - Early access
 
 - Official-SDK local stdio gateway with nine fixed VerifiedPricing tools,

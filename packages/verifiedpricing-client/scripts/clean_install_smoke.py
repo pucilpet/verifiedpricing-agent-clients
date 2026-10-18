@@ -43,9 +43,9 @@ def main(argv=None):
         python = root / "venv/bin/python"
         command = root / "venv/bin/verifiedpricing"
         run([str(python), "-m", "pip", "--isolated", "install", "--no-index", "--no-deps", str(wheel)])
-        run([str(python), "-c", "import pathlib, sys, verifiedpricing_client as c; assert pathlib.Path(c.__file__).is_relative_to(pathlib.Path(sys.prefix)); assert c.__version__ == '0.1.0'"])
+        run([str(python), "-c", "import pathlib, sys, verifiedpricing_client as c; assert pathlib.Path(c.__file__).is_relative_to(pathlib.Path(sys.prefix)); assert c.__version__ == '0.1.1'"])
         version = run([str(command), "--version"]).strip()
-        if version != "verifiedpricing 0.1.0" or "records" not in run([str(command), "--help"]):
+        if version != "verifiedpricing 0.1.1" or "records" not in run([str(command), "--help"]):
             raise RuntimeError("Installed console metadata does not match")
         calls = []
         payload = {"schema_version": 1, "data": {"account_budget": "shared_across_transports"},

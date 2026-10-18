@@ -42,6 +42,24 @@ class CompetitorToolTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(failed)
         self.assertEqual(client.calls, [arguments])
 
+    async def test_optional_pair_filter_forwarded_and_bounded_without_new_tools(self):
+        client=Client()
+        arguments={"domain":"example.com","competitor_product_id":"product:later.example",
+                   "scenario":SCENARIO,"limit":2}
+        payload,_,failed=await execute(client,SerialRunner(),"get_competitor_prices",arguments)
+        self.assertFalse(failed)
+        self.assertIs(payload,PAYLOAD)
+        self.assertEqual(client.calls,[arguments])
+        self.assertEqual(len(TOOLS),9)
+        schema=TOOLS["get_competitor_prices"][1]
+        self.assertNotIn("competitor_product_id",schema["required"])
+        for value in ("","bad/id","x"*129,True,123,None,[]):
+            payload,_,failed=await execute(client,SerialRunner(),"get_competitor_prices",
+                {**arguments,"competitor_product_id":value})
+            self.assertTrue(failed)
+            self.assertEqual(payload["error"]["code"],"invalid_input")
+        self.assertEqual(client.calls,[arguments])
+
     async def test_schema_and_runtime_reject_seed_limit_selection_and_authority_ambiguity(self):
         client = Client()
         baseline = {"product_id": "product:example.com", "scenario": SCENARIO}

@@ -68,7 +68,7 @@ class SDKTests(unittest.IsolatedAsyncioTestCase):
             "discovery": {"edition": "fixture-2026-01"}, "comparison": {"status": "not_comparable"},
             "selection_policy": "synthetic only"}, "usage": {"day": {"used": 3}}}
         client = FakeClient(envelope)
-        arguments = {"product_id": "product:example.com", "limit": 3,
+        arguments = {"product_id": "product:example.com", "limit": 3, "competitor_product_id": "product:later.example",
                      "scenario": {"as_of": "2026-10-17T00:00:00Z", "currency": "USD", "market": "US"}}
         meta = {"io.modelcontextprotocol/protocolVersion": "2026-07-28",
                 "io.modelcontextprotocol/clientCapabilities": {}}
@@ -137,6 +137,7 @@ class SDKTests(unittest.IsolatedAsyncioTestCase):
                 "protocolVersion": "2025-11-25", "capabilities": {}, "clientInfo": {"name": "private-fixture", "version": "0.1"}}})
             initialized = await asyncio.wait_for(receive(), 3)
             self.assertEqual(initialized["result"]["protocolVersion"], "2025-11-25")
+            self.assertEqual(initialized["result"]["serverInfo"]["version"], "0.1.1")
             await send({"jsonrpc": "2.0", "method": "notifications/initialized"})
             await send({"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}})
             listed = await asyncio.wait_for(receive(), 3)

@@ -125,7 +125,7 @@ class Client:
         url = self.base_url + path
         if query:
             url += "?" + urllib.parse.urlencode(query)
-        headers = {"Accept": "application/json", "User-Agent": "verifiedpricing-client/0.1.0"}
+        headers = {"Accept": "application/json", "User-Agent": "verifiedpricing-client/0.1.1"}
         if self._key:
             headers["Authorization"] = "Bearer " + self._key
         try:
@@ -231,7 +231,7 @@ class Client:
             raise ClientError("input", "Provide a domain name without a URL or IP address")
         return self.request("GET", "/api/v1/records/" + domain)
 
-    def competitor_prices(self, *, scenario, product_id=None, domain=None, limit=3, selections=None):
+    def competitor_prices(self, *, scenario, product_id=None, domain=None, limit=3, selections=None, competitor_product_id=None):
         if (product_id is None) == (domain is None):
             raise ClientError("input", "Provide exactly one seed product ID or canonical domain")
         if type(limit) is not int or limit not in (2, 3):
@@ -246,6 +246,10 @@ class Client:
             if not isinstance(domain, str) or not _DOMAIN.fullmatch(domain):
                 raise ClientError("input", "Provide a canonical lowercase domain without a URL or IP address")
             body["domain"] = domain
+        if competitor_product_id is not None:
+            if not isinstance(competitor_product_id, str) or not re.fullmatch(r"[A-Za-z0-9:_.-]{1,128}", competitor_product_id):
+                raise ClientError("input", "Invalid competitor product identifier")
+            body["competitor_product_id"] = competitor_product_id
         if selections is not None:
             if not isinstance(selections, dict) or len(selections) > 3:
                 raise ClientError("input", "Provide at most three explicit snapshot selections")

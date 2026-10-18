@@ -1,6 +1,6 @@
-# VerifiedPricing MCP stdio gateway 0.1.0
+# VerifiedPricing MCP stdio gateway 0.1.1
 
-Separate local gateway over `verifiedpricing-client==0.1.0`, pinned to the
+Separate local gateway over `verifiedpricing-client==0.1.1`, pinned to the
 official Python SDK `mcp==2.3.0`. Runtime SDK dependencies belong in this
 package's isolated environment; do not upgrade engine dependencies to install
 it. Python >=3.10, Linux/macOS POSIX pipes and the asyncio event loop are
@@ -9,18 +9,27 @@ supported. Windows is not supported.
 This package provides local stdio only. It does not provide hosted Streamable
 HTTP, OAuth/OIDC issuance, protected-resource metadata, a registry listing or
 interactive browser sign-in. A user's REST key does not establish interactive
-remote MCP authorization. API pilot credentials are issued separately; open
-API sign-up is not provided. Package installation does not establish API
-availability or account access.
+remote MCP authorization. Create your own read key on the website at
+[VerifiedPricing Account](https://verifiedpricing.com/account): sign in with the
+email link, explicitly accept the current agent access terms and acknowledge
+the privacy notice, then create a key. The account form initially selects both
+`prices:read` and `comparisons:read`; keep `comparisons:read` for comparisons and
+competitor prices. [Developers](https://verifiedpricing.com/developers) describes
+the API endpoints and scopes. This website sign-in is separate from local stdio
+configuration.
+
+This checkout prepares the 0.1.1 candidate. The 0.1.0 artifacts do not include
+the optional exact competitor filter. The instructions below apply only after
+the 0.1.1 release provides reviewed wheels and checksums.
 
 ## Install and launch
 
 This is an early-access package. The intended distribution channel is the
-[GitHub prerelease](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.1.0),
+[GitHub prerelease](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.1.1),
 not PyPI or the MCP Registry. Install only after the published release provides
 reviewed assets and checksums. Expected wheel filenames are
-`verifiedpricing_client-0.1.0-py3-none-any.whl` and
-`verifiedpricing_mcp-0.1.0-py3-none-any.whl`.
+`verifiedpricing_client-0.1.1-py3-none-any.whl` and
+`verifiedpricing_mcp-0.1.1-py3-none-any.whl`.
 
 Download both wheels and `SHA256SUMS` from that release. Verify with
 `sha256sum -c SHA256SUMS` (Linux) or `shasum -a 256 -c SHA256SUMS` (macOS), then:
@@ -28,8 +37,8 @@ Download both wheels and `SHA256SUMS` from that release. Verify with
 ```sh
 python3 -m venv ~/.venvs/verifiedpricing-agent
 ~/.venvs/verifiedpricing-agent/bin/python -m pip install \
-  ./verifiedpricing_client-0.1.0-py3-none-any.whl \
-  ./verifiedpricing_mcp-0.1.0-py3-none-any.whl
+  ./verifiedpricing_client-0.1.1-py3-none-any.whl \
+  ./verifiedpricing_mcp-0.1.1-py3-none-any.whl
 ```
 
 The MCP wheel pins the official SDK at `mcp==2.3.0`; pip resolves it and its
@@ -79,8 +88,18 @@ snapshots, market, currency and timezone-aware scenario time; exact usage is a
 decimal string. SDK negotiation and response field aliases remain official SDK
 responsibilities, not a handwritten protocol implementation.
 
+The optional `competitor_product_id` string selects an exact competitor product
+ID in `get_competitor_prices`; it is not a required tool argument.
+The service restricts the read to that published qualified directed relationship.
+Omitting the filter preserves the existing bounded selection. No other competitor
+substitutes for an unavailable requested pair: the response is partial with
+`requested_competitor_not_current`. Every filtered data response echoes the exact
+ID in `coverage.requested_competitor_product_id`, including unavailable or
+ambiguous seed responses. Seed ambiguity and integrity failures retain their
+existing behavior. The total `limit` still determines the charge (2 or 3).
+
 `get_competitor_prices` requires `POST /api/v1/competitor-prices` to be enabled
-for your API pilot account. Its fixed schema accepts exactly one
+for your account. Its fixed schema accepts exactly one
 `product_id` or canonical lowercase `domain`, the existing explicit scenario,
 optional total `limit` 2 or 3 (default 3, **including the seed**), and at most
 three `selections` mapping product IDs to pinned observation IDs. Dotted product
@@ -91,7 +110,7 @@ crawl or LinkCensus query is performed. Preserve the service's status, reason,
 seed/competitors, discovery, comparison and selection-policy fields unchanged;
 the human formatter does not assume a nested production response schema.
 
-Client and gateway are compatible at version 0.1.0. The pilot allowance is
+Client and gateway are compatible at version 0.1.1. The free account allowance is
 **1,000 weighted units per day and 10,000 per month per account**, shared across
 REST, CLI and all MCP sessions. Use `get_usage` for returned account limits and
 remaining allowance; starting another session or key does not reset it.
@@ -163,7 +182,7 @@ PYTHONPATH=src:../verifiedpricing-client/src PYTHONDONTWRITEBYTECODE=1 \
 ```
 
 Without the SDK, protocol tests explicitly skip. The tests exercise local OS
-pipes and fixture responses, not a live pilot account. Hosted MCP, OAuth and a
+pipes and fixture responses, not a live account. Hosted MCP, OAuth and a
 registry listing are not implemented by this local stdio package.
 
 MIT covers client/gateway code only. Data and vendor source content have separate

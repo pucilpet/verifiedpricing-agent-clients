@@ -1,10 +1,12 @@
 import asyncio
+import contextlib
+import io
 import json
 import os
 import threading
 import unittest
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from verifiedpricing_mcp.runner import Busy, DeadlineExceeded, SerialRunner
 from verifiedpricing_mcp.tools import MAX_TEXT_BYTES, TOOLS, execute
@@ -65,6 +67,38 @@ class BoundsTests(unittest.TestCase):
     def test_secret_detection_checks_decoded_values_and_keys(self):
         self.assertTrue(contains_secret({"nested": [{"fixture_key": "value"}]}, "fixture_key"))
         self.assertFalse(contains_secret({"data": "public"}, "fixture_key"))
+
+
+class LauncherVersionTests(unittest.TestCase):
+    def test_candidate_launcher_requires_matching_client_before_opening_stdio(self):
+        from verifiedpricing_mcp.cli import main
+        for client_version,expected in (("0.1.0",2),("0.1.1",0)):
+            with self.subTest(client_version=client_version):
+                versions={"mcp":"2.3.0","verifiedpricing-client":client_version}
+                with patch("verifiedpricing_mcp.cli.importlib.metadata.version",side_effect=versions.__getitem__), \
+                     patch("verifiedpricing_mcp.cli.logging.disable"), \
+                     patch.dict(os.environ,{"VERIFIEDPRICING_API_KEY":"vp_synthetic_candidate"}), \
+                     patch("verifiedpricing_client.Client") as client, \
+                     patch("verifiedpricing_mcp.server.serve",new_callable=AsyncMock) as serve, \
+                     patch("verifiedpricing_mcp.transport.claim_stdio",return_value=contextlib.nullcontext((10,11))) as claim, \
+                     contextlib.redirect_stderr(io.StringIO()):
+                    self.assertEqual(main([]),expected)
+                    if expected:
+                        client.assert_not_called()
+                        claim.assert_not_called()
+                        serve.assert_not_called()
+                    else:
+                        client.assert_called_once_with("https://verifiedpricing.com","vp_synthetic_candidate",allow_localhost=False,timeout=15)
+                        serve.assert_awaited_once_with(client.return_value,10,11,secret="vp_synthetic_candidate")
+
+    def test_candidate_launcher_version_exits_before_dependency_checks(self):
+        from verifiedpricing_mcp.cli import main
+        output=io.StringIO()
+        with patch("verifiedpricing_mcp.cli.importlib.metadata.version",side_effect=AssertionError("dependency lookup")), \
+             contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as stopped:
+            main(["--version"])
+        self.assertEqual(stopped.exception.code,0)
+        self.assertEqual(output.getvalue().strip(),"verifiedpricing-mcp 0.1.1")
 
 
 class AsyncBoundsTests(unittest.IsolatedAsyncioTestCase):

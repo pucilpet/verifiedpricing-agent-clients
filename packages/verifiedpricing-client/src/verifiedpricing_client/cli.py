@@ -61,6 +61,7 @@ def parser():
                 seed.add_argument("--product-id", help="Seed product ID")
                 seed.add_argument("--domain", help="Canonical lowercase seed domain")
                 child.add_argument("--limit", type=int, choices=(2, 3), default=3, help="Total products including the seed")
+                child.add_argument("--competitor-product-id", help="Restrict to one exact published qualified competitor product ID")
                 child.add_argument("--select", action=SelectAction, default=[], metavar="PRODUCT_ID=SNAPSHOT_ID")
             child.add_argument("--currency", required=True)
             child.add_argument("--market", required=True)
@@ -213,7 +214,8 @@ def main(argv=None):
                         raise ClientError("input", "Select each product at most once")
                     selections[product_id] = snapshot
                 payload = client.competitor_prices(scenario=scenario(args), product_id=args.product_id,
-                    domain=args.domain, limit=args.limit, selections=selections if args.select else None)
+                    domain=args.domain, limit=args.limit, selections=selections if args.select else None,
+                    competitor_product_id=args.competitor_product_id)
             elif args.command == "search":
                 payload = client.search(args.query, limit=args.limit, offset=args.offset)
             elif args.command == "history":

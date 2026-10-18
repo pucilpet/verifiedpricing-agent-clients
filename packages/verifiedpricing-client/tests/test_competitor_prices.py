@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from verifiedpricing_client import Client, ClientError
+from verifiedpricing_client import Client, ClientError, __version__
 from verifiedpricing_client.cli import main
 
 SNAPSHOT = "po_" + "a" * 64
@@ -43,6 +43,7 @@ class CompetitorClientTests(unittest.TestCase):
 
     def sent_body(self):
         request = self.opened.call_args.args[0]
+        self.assertEqual(request.get_header("User-agent"), "verifiedpricing-client/0.1.1")
         self.assertEqual(request.method, "POST")
         self.assertEqual(request.full_url, "https://verifiedpricing.com/api/v1/competitor-prices")
         return json.loads(request.data)
@@ -60,6 +61,16 @@ class CompetitorClientTests(unittest.TestCase):
         return ["competitors", "--product-id", "product:example.com", "--currency", "USD", "--market", "US",
                 "--as-of", "2026-10-17T12:00:00Z", "--months", "12", "--seats", "2", *extra]
 
+    def test_cli_reports_candidate_version_without_reading_credentials(self):
+        output=io.StringIO()
+        with patch("verifiedpricing_client.cli.config.load",side_effect=AssertionError("read credentials")):
+            with contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as stopped:
+                main(["--version"])
+        self.assertEqual(stopped.exception.code,0)
+        self.assertEqual(output.getvalue().strip(),"verifiedpricing 0.1.1")
+        self.assertEqual(__version__,"0.1.1")
+        self.opened.assert_not_called()
+
     def test_product_seed_payload_preserves_scenario_selections_and_envelope(self):
         selections = {"product:example.com": SNAPSHOT, "product:other.example": SECOND}
         result = self.client.competitor_prices(product_id="product:example.com", scenario=SCENARIO, limit=2, selections=selections)
@@ -71,6 +82,24 @@ class CompetitorClientTests(unittest.TestCase):
     def test_domain_seed_default_limit_is_total_including_seed(self):
         self.client.competitor_prices(domain="example.com", scenario=SCENARIO)
         self.assertEqual(self.sent_body(), {"domain": "example.com", "scenario": SCENARIO, "limit": 3})
+
+    def test_explicit_pair_client_and_cli_serialization(self):
+        self.client.competitor_prices(domain="example.com",scenario=SCENARIO,
+            competitor_product_id="product:later.example",limit=2)
+        self.assertEqual(self.sent_body(),{"domain":"example.com","scenario":SCENARIO,"limit":2,
+            "competitor_product_id":"product:later.example"})
+        code,_,error=self.cli(self.arguments("--competitor-product-id","product:later.example","--limit","2","--json"))
+        self.assertEqual((code,error),(0,""))
+        self.assertEqual(self.sent_body()["competitor_product_id"],"product:later.example")
+        self.assertEqual(self.sent_body()["limit"],2)
+
+    def test_invalid_pair_identifiers_never_issue_http(self):
+        for value in ("","bad/id","x"*129,True,123,[]):
+            with self.subTest(value=value), self.assertRaises(ClientError):
+                self.client.competitor_prices(product_id="seed",scenario=SCENARIO,competitor_product_id=value)
+        code,_,_=self.cli(self.arguments("--competitor-product-id","bad/id"))
+        self.assertEqual(code,2)
+        self.opened.assert_not_called()
 
     def test_invalid_seed_limit_or_selection_never_issues_http(self):
         invalid = [dict(), {"product_id": "seed", "domain": "example.com"}, {"product_id": "bad/id"},

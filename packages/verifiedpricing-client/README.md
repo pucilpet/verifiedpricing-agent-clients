@@ -1,26 +1,33 @@
-# VerifiedPricing client 0.1.0
+# VerifiedPricing client 0.1.1
 
 Python 3.10+ REST client and `verifiedpricing` command. Runtime uses only the Python
 standard library. Supported platforms: Linux and macOS with POSIX ownership/mode
 checks. Windows credential-file support is not implemented.
 
-This is an early-access client. API pilot credentials are issued separately;
-there is no open API sign-up or hosted OAuth flow. A LinkCensus key is not a
-VerifiedPricing credential. Installing a package does not enable an API route
-or enroll an account. Confirm pilot access before making authenticated requests.
+Get your own read key at [VerifiedPricing Account](https://verifiedpricing.com/account).
+Sign in with the email link, explicitly accept the current agent access terms
+and acknowledge the privacy notice, then create a key. The account form initially
+selects `prices:read` and `comparisons:read`; keep `comparisons:read` selected for
+scenario comparisons and competitor prices. See [Developers](https://verifiedpricing.com/developers)
+for endpoint and scope details. A LinkCensus key is not a VerifiedPricing key.
+This package uses your read key; it does not provide a hosted OAuth flow.
 
-The pilot allowance is **1,000 weighted units per day and 10,000 per month per
+The free account allowance is **1,000 weighted units per day and 10,000 per month per
 account**, shared by REST, this CLI and MCP. It is not a separate allowance per
 key or transport. Consult `usage` for the account's returned limits and remaining
 budget. Admitted operations can consume units even when data is missing or partial.
 
+This checkout prepares the 0.1.1 candidate. The 0.1.0 artifacts do not include
+the optional exact competitor filter. The instructions below apply only after
+the 0.1.1 release provides reviewed wheels and checksums.
+
 ## Install and run
 
 The intended distribution channel is the
-[GitHub prerelease](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.1.0),
+[GitHub prerelease](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.1.1),
 not PyPI. Installation is available only when that release lists its reviewed
 assets and checksums. The expected client asset is
-`verifiedpricing_client-0.1.0-py3-none-any.whl`. Do not substitute an unreviewed
+`verifiedpricing_client-0.1.1-py3-none-any.whl`. Do not substitute an unreviewed
 source checkout or guess a missing download/hash.
 
 After downloading that wheel and `SHA256SUMS` from the published release, verify
@@ -30,7 +37,7 @@ the checksum with `sha256sum -c SHA256SUMS` (Linux) or
 ```sh
 python3 -m venv ~/.venvs/verifiedpricing
 ~/.venvs/verifiedpricing/bin/python -m pip install --no-index --no-deps \
-  ./verifiedpricing_client-0.1.0-py3-none-any.whl
+  ./verifiedpricing_client-0.1.1-py3-none-any.whl
 ~/.venvs/verifiedpricing/bin/verifiedpricing --version
 ~/.venvs/verifiedpricing/bin/verifiedpricing --help
 ```
@@ -79,7 +86,7 @@ calculate, FX-convert, guess missing prices or upgrade automated provenance.
 `not_comparable` remains an ordinary successful data response with explicit reasons.
 
 Competitor pricing uses `POST /api/v1/competitor-prices` when enabled for the
-API pilot. An older backend does not gain this route by installing a client.
+account API. An older backend does not gain this route by installing a client.
 The read uses retained, qualified relationships and available pricing data; it
 makes no live LinkCensus query or automatic crawl. Missing or partial coverage
 remains explicit and does not establish complete market coverage.
@@ -87,9 +94,20 @@ remains explicit and does not establish complete market coverage.
 ```sh
 verifiedpricing competitors --product-id product:example.com \
   --currency USD --market US --months 12 --seats 2 \
-  --as-of 2026-10-17T12:00:00Z --limit 3 \
+  --as-of 2026-10-17T12:00:00Z --limit 2 \
+  --competitor-product-id product:other.example \
   --select 'product:example.com=po_<64-lowercase-hex-characters>' --json
 ```
+
+Add `--competitor-product-id product:other.example` to select an exact
+competitor product ID (Python: `competitor_product_id="product:other.example"`).
+The service restricts the read to that published qualified directed relationship.
+Omitting the filter preserves the existing bounded selection. No other competitor
+substitutes for an unavailable requested pair: the response is partial with
+`requested_competitor_not_current`. Every filtered data response echoes the exact
+ID in `coverage.requested_competitor_product_id`, including unavailable or
+ambiguous seed responses. Seed ambiguity and integrity failures retain their
+existing behavior. The total `limit` still determines the charge (2 or 3).
 
 Choose exactly one `--product-id` or canonical lowercase `--domain`. `--limit`
 is **total products including the seed**, either 2 or 3 (default 3). Up to three
@@ -149,7 +167,7 @@ library does not implement OAuth.
 The new method uses keyword arguments:
 `client.competitor_prices(product_id="product:example.com", scenario={"as_of":
 "2026-10-17T12:00:00Z", "currency":"USD", "market":"US"}, limit=3,
-selections={...})`. Use `domain="example.com"` instead of `product_id` for a domain
+selections={...}, competitor_product_id="product:other.example")`. Use `domain="example.com"` instead of `product_id` for a domain
 seed. Its success result is the unchanged standard REST envelope.
 
 ## Development checks
@@ -159,7 +177,7 @@ PYTHONPATH=src PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -
 ```
 
 Tests use disposable private configuration and a loopback-only fixture server.
-They do not require a pilot key. The optional offline wheel check is
+They do not require an account key. The optional offline wheel check is
 `scripts/clean_install_smoke.py`: without `--execute` it prints a plan; with
 `--execute` it installs only a supplied wheel in a disposable environment and
 runs local console/fixture checks. It does not publish or test a live account.
