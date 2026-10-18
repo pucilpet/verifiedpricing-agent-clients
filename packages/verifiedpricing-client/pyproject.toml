@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "verifiedpricing-client"
+version = "0.1.0"
+description = "Bounded REST client and CLI for source-backed VerifiedPricing snapshots"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = []
+
+[project.scripts]
+verifiedpricing = "verifiedpricing_client.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
