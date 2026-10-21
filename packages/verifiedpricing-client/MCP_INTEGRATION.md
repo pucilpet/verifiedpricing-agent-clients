@@ -1,4 +1,4 @@
-# Local MCP integration
+# MCP integration
 
 `verifiedpricing-mcp==0.1.1` is a separate local stdio gateway over
 `verifiedpricing-client==0.1.1` and the official `mcp==2.3.0` SDK. The client stays
@@ -16,8 +16,18 @@ Configure the key with `verifiedpricing configure --key-stdin`, or supply it
 through `VERIFIEDPRICING_API_KEY` in the launcher's private environment. The
 client configuration must be an owned mode-0600 file. Never put keys in tool
 arguments or public files. A LinkCensus key is not accepted as a VP key.
-This local stdio package does not implement a hosted MCP endpoint, hosted OAuth
-flow or MCP Registry listing.
+For hosted Streamable HTTP, connect to **https://verifiedpricing.com/mcp** and
+send the personal key as `Authorization: Bearer YOUR_VERIFIEDPRICING_API_KEY`
+through your MCP client's private secret settings. No local package is required.
+See the [hosted configuration](../../README.md#hosted-mcp). There is no OAuth
+sign-in flow. The [official MCP Registry entry](https://registry.modelcontextprotocol.io/v0/servers/io.github.pucilpet%2Fverifiedpricing/versions/0.2.0)
+lists the hosted endpoint as `io.github.pucilpet/verifiedpricing`, with metadata
+version 0.2.0. This does not change either Python package version (0.1.1).
+
+Hosted and local MCP expose the same nine tools. Read tools require `prices:read`;
+`compare_prices` and `get_competitor_prices` require `comparisons:read`.
+`get_usage` accepts any valid account key. Hosted connection and tool listing
+validate the key without consuming weighted units.
 
 The nine tools map directly to retained REST data:
 

@@ -6,10 +6,14 @@ package's isolated environment; do not upgrade engine dependencies to install
 it. Python >=3.10, Linux/macOS POSIX pipes and the asyncio event loop are
 supported. Windows is not supported.
 
-This package provides local stdio only. It does not provide hosted Streamable
-HTTP, OAuth/OIDC issuance, protected-resource metadata, a registry listing or
-interactive browser sign-in. A user's REST key does not establish interactive
-remote MCP authorization. Create your own read key on the website at
+This package provides local stdio. To connect without installing Python packages,
+use the hosted Streamable HTTP service at **https://verifiedpricing.com/mcp** with
+your personal key in `Authorization: Bearer YOUR_VERIFIEDPRICING_API_KEY`. Store
+it in the MCP client's private secret settings. Hosted access uses the same nine
+tools, key scopes and shared account allowance as local stdio, with no OAuth
+sign-in flow. See the [hosted setup](../../README.md#hosted-mcp).
+
+Create your own read key on the website at
 [VerifiedPricing Account](https://verifiedpricing.com/account): sign in with the
 email link, explicitly accept the current agent access terms and acknowledge
 the privacy notice, then create a key. The account form initially selects both
@@ -18,21 +22,23 @@ competitor prices. [Developers](https://verifiedpricing.com/developers) describe
 the API endpoints and scopes. This website sign-in is separate from local stdio
 configuration.
 
-This checkout prepares the 0.1.1 candidate. The 0.1.0 artifacts do not include
-the optional exact competitor filter. The instructions below apply only after
-the 0.1.1 release provides reviewed wheels and checksums.
+Version 0.1.1 includes the optional exact competitor filter, which is absent
+from 0.1.0.
 
 ## Install and launch
 
-This is an early-access package. The intended distribution channel is the
-[GitHub prerelease](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.1.1),
-not PyPI or the MCP Registry. Install only after the published release provides
-reviewed assets and checksums. Expected wheel filenames are
+Download version 0.1.1 from the
+[GitHub release](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.1.1),
+which provides wheels, source archives and `SHA256SUMS`. The hosted service has
+an [official MCP Registry entry](https://registry.modelcontextprotocol.io/v0/servers/io.github.pucilpet%2Fverifiedpricing/versions/0.2.0);
+its metadata version 0.2.0 is separate from this local package version 0.1.1.
+No PyPI publication is claimed here. The wheel filenames are
 `verifiedpricing_client-0.1.1-py3-none-any.whl` and
 `verifiedpricing_mcp-0.1.1-py3-none-any.whl`.
 
-Download both wheels and `SHA256SUMS` from that release. Verify with
-`sha256sum -c SHA256SUMS` (Linux) or `shasum -a 256 -c SHA256SUMS` (macOS), then:
+Download both wheels and `SHA256SUMS` from that release. Run `sha256sum *.whl`
+(Linux) or `shasum -a 256 *.whl` (macOS), compare each wheel hash with its entry
+in `SHA256SUMS`, and install only if both match:
 
 ```sh
 python3 -m venv ~/.venvs/verifiedpricing-agent
@@ -181,9 +187,8 @@ PYTHONPATH=src:../verifiedpricing-client/src PYTHONDONTWRITEBYTECODE=1 \
   python3 -m unittest discover -s tests -v
 ```
 
-Without the SDK, protocol tests explicitly skip. The tests exercise local OS
-pipes and fixture responses, not a live account. Hosted MCP, OAuth and a
-registry listing are not implemented by this local stdio package.
+Without the SDK, protocol tests explicitly skip. These tests exercise local OS
+pipes and fixture responses. They do not verify the separately hosted service.
 
 MIT covers client/gateway code only. Data and vendor source content have separate
 terms; retain citations, original dates and trust qualifiers. See

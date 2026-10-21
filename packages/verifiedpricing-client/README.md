@@ -10,29 +10,31 @@ and acknowledge the privacy notice, then create a key. The account form initiall
 selects `prices:read` and `comparisons:read`; keep `comparisons:read` selected for
 scenario comparisons and competitor prices. See [Developers](https://verifiedpricing.com/developers)
 for endpoint and scope details. A LinkCensus key is not a VerifiedPricing key.
-This package uses your read key; it does not provide a hosted OAuth flow.
+This package uses your read key. For hosted MCP access without installing the
+client, connect to **https://verifiedpricing.com/mcp** with that personal key in
+`Authorization: Bearer YOUR_VERIFIEDPRICING_API_KEY`. Hosted and local access
+share account limits and scopes. See the [hosted setup](../../README.md#hosted-mcp);
+there is no OAuth sign-in flow.
 
 The free account allowance is **1,000 weighted units per day and 10,000 per month per
 account**, shared by REST, this CLI and MCP. It is not a separate allowance per
 key or transport. Consult `usage` for the account's returned limits and remaining
 budget. Admitted operations can consume units even when data is missing or partial.
 
-This checkout prepares the 0.1.1 candidate. The 0.1.0 artifacts do not include
-the optional exact competitor filter. The instructions below apply only after
-the 0.1.1 release provides reviewed wheels and checksums.
+Version 0.1.1 includes the optional exact competitor filter, which is absent
+from 0.1.0.
 
 ## Install and run
 
-The intended distribution channel is the
-[GitHub prerelease](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.1.1),
-not PyPI. Installation is available only when that release lists its reviewed
-assets and checksums. The expected client asset is
-`verifiedpricing_client-0.1.1-py3-none-any.whl`. Do not substitute an unreviewed
-source checkout or guess a missing download/hash.
+Download version 0.1.1 from the
+[GitHub release](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.1.1),
+which provides wheels, source archives and `SHA256SUMS`. The client wheel is
+`verifiedpricing_client-0.1.1-py3-none-any.whl`. No PyPI publication is claimed here.
 
-After downloading that wheel and `SHA256SUMS` from the published release, verify
-the checksum with `sha256sum -c SHA256SUMS` (Linux) or
-`shasum -a 256 -c SHA256SUMS` (macOS), then install into an isolated environment:
+Download that wheel and `SHA256SUMS`. Run
+`sha256sum verifiedpricing_client-0.1.1-py3-none-any.whl` (Linux) or
+`shasum -a 256 verifiedpricing_client-0.1.1-py3-none-any.whl` (macOS), compare the
+hash with its entry in `SHA256SUMS`, then install only if it matches:
 
 ```sh
 python3 -m venv ~/.venvs/verifiedpricing
