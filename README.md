@@ -64,7 +64,7 @@ secret substitution vary.
 ```
 
 The hosted endpoint uses the same personal account allowance. Its MCP Registry
-[entry, metadata version 0.3.0](https://registry.modelcontextprotocol.io/v0/servers/io.github.pucilpet%2Fverifiedpricing/versions/0.3.0),
+[entry, metadata version 0.3.2](https://registry.modelcontextprotocol.io/v0/servers/io.github.pucilpet%2Fverifiedpricing/versions/0.3.2),
 records the service endpoint. Use the tool list returned by the running service
 when connecting. The local 0.3.2 package provides the eleven tools below.
 
