@@ -4,7 +4,9 @@ Python REST client, CLI and MCP tools for pricing snapshots, source citations,
 comparisons and explicit research requests.
 
 Bundle **v0.3.1** pairs **verifiedpricing-client 0.1.3** with
-**verifiedpricing-mcp 0.3.1**. Python 3.10+ on Linux or macOS is supported.
+**verifiedpricing-mcp 0.3.1**. The CLI and local stdio support Python 3.10+
+on Linux and macOS. Self-hosted HTTP extras require Python 3.11+.
+Connecting to the hosted endpoint requires no Python installation.
 
 ## Get started
 
