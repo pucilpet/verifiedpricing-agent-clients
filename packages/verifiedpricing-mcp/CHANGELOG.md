@@ -1,4 +1,10 @@
-# 0.3.1 - Candidate
+# 0.3.2 - Candidate
+
+- Handle asyncio read/write deadlines consistently on Python 3.10 and later.
+- Close stalled stdio streams while retaining pending request admission; add a partial-frame deadline regression.
+- Keep client 0.1.3, the official mcp 2.3.0 SDK, eleven tools and structured data unchanged.
+
+# 0.3.1 - 2026-10-24
 
 - Require exactly verifiedpricing-client 0.1.3 so human tool text includes catalog-reference qualifications.
 - Retain eleven tools, the official mcp 2.3.0 SDK, existing protocol negotiation, manual API-key authentication and unchanged structured data.

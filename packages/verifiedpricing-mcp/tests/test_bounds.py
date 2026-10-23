@@ -6,7 +6,7 @@ import os
 import threading
 import unittest
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 from verifiedpricing_mcp.runner import Busy, DeadlineExceeded, SerialRunner
 from verifiedpricing_mcp.tools import MAX_TEXT_BYTES, TOOLS, execute
@@ -98,7 +98,7 @@ class LauncherVersionTests(unittest.TestCase):
              contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as stopped:
             main(["--version"])
         self.assertEqual(stopped.exception.code,0)
-        self.assertEqual(output.getvalue().strip(),"verifiedpricing-mcp 0.3.1")
+        self.assertEqual(output.getvalue().strip(),"verifiedpricing-mcp 0.3.2")
 
 
 class AsyncBoundsTests(unittest.IsolatedAsyncioTestCase):
@@ -249,6 +249,26 @@ class AsyncBoundsTests(unittest.IsolatedAsyncioTestCase):
                 bounded_writer = WriteStream(write_fd, Admission(), secret="fixture_key")
                 with self.assertRaises(anyio.BrokenResourceError):
                     await bounded_writer.send(SimpleNamespace(message=Message(value)))
+        finally:
+            os.close(read_fd)
+            os.close(write_fd)
+
+    async def test_partial_frame_deadline_closes_stream_without_decode_or_permit_release(self):
+        import anyio
+        read_fd, write_fd = os.pipe()
+        admission = Admission()
+        admission.accept({"id": 1, "method": "tools/call"})
+        decode = Mock()
+        reader = ReadStream(read_fd, admission, decode)
+        try:
+            os.write(write_fd, b'{"jsonrpc":')
+            with patch("verifiedpricing_mcp.transport.FRAME_SECONDS", 0.02):
+                with self.assertRaises(anyio.EndOfStream):
+                    await asyncio.wait_for(reader.receive(), 0.5)
+            decode.assert_not_called()
+            self.assertTrue(reader.closed)
+            self.assertTrue(admission.closed_event.is_set())
+            self.assertEqual(admission.pending, (int, 1))
         finally:
             os.close(read_fd)
             os.close(write_fd)

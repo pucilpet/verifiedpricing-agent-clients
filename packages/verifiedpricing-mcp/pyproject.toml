@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "verifiedpricing-mcp"
-version = "0.3.1"
+version = "0.3.2"
 description = "Bounded stdio and optional hosted HTTP MCP over VerifiedPricing REST"
 readme = "README.md"
 requires-python = ">=3.10"

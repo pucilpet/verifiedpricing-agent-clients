@@ -8,6 +8,9 @@ Bundle **v0.3.1** pairs **verifiedpricing-client 0.1.3** with
 on Linux and macOS. Self-hosted HTTP extras require Python 3.11+.
 Connecting to the hosted endpoint requires no Python installation.
 
+MCP 0.3.2 is in release validation for Python 3.10 stdio deadlines.
+The download links below refer to published bundle v0.3.1.
+
 ## Get started
 
 Create your own key at [VerifiedPricing Account](https://verifiedpricing.com/account).

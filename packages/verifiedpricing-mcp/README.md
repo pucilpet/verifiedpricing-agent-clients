@@ -1,4 +1,4 @@
-# VerifiedPricing MCP 0.3.1
+# VerifiedPricing MCP 0.3.2
 
 Separate gateway over `verifiedpricing-client==0.1.3`, pinned to the
 official Python SDK `mcp==2.3.0`. Runtime SDK dependencies belong in this
@@ -6,7 +6,8 @@ package's isolated environment; do not upgrade engine dependencies to install
 it. Python >=3.10, Linux/macOS POSIX pipes and the asyncio event loop are
 supported. Windows is not supported.
 
-MCP 0.3.1 pins client 0.1.3 for catalog-reference qualifications in human tool
+MCP 0.3.2 fixes Python 3.10 stdio deadline handling and pins client 0.1.3
+for catalog-reference qualifications in human tool
 text while preserving exact structured data. It retains explicit pricing research
 requests in the hosted and local transports. Coverage tools require an API with coverage requests enabled.
 Create your own API key at
@@ -27,8 +28,8 @@ uses the service endpoint described below.
 ## Install local stdio
 
 Download `verifiedpricing_client-0.1.3-py3-none-any.whl`,
-`verifiedpricing_mcp-0.3.1-py3-none-any.whl` and `SHA256SUMS` from the
-[GitHub prerelease v0.3.1](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.3.1).
+`verifiedpricing_mcp-0.3.2-py3-none-any.whl` and `SHA256SUMS` from the
+[GitHub prerelease v0.3.2](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.3.2).
 Verify with `sha256sum -c SHA256SUMS` (Linux) or
 `shasum -a 256 -c SHA256SUMS` (macOS), then install:
 
@@ -36,7 +37,7 @@ Verify with `sha256sum -c SHA256SUMS` (Linux) or
 python3 -m venv ~/.venvs/verifiedpricing-agent
 ~/.venvs/verifiedpricing-agent/bin/python -m pip install \
   ./verifiedpricing_client-0.1.3-py3-none-any.whl \
-  ./verifiedpricing_mcp-0.3.1-py3-none-any.whl
+  ./verifiedpricing_mcp-0.3.2-py3-none-any.whl
 ```
 
 The MCP wheel pins the official SDK at `mcp==2.3.0`; pip resolves it and its
@@ -84,7 +85,7 @@ Initialize and list-tools authenticate without debiting pricing units; tool
 calls use existing API scopes, revocation and shared account limits.
 
 The source provides `python -m verifiedpricing_mcp.http` for the standalone
-operator service, using the optional pinned `hosted` dependencies. The service
+operator service, using the optional pinned `hosted` dependencies on Python 3.11+. The service
 has fixed internal engine routing. The generic transport lives
 inside the product namespace to avoid collisions with other MCP packages.
 See [hosted client setup](https://verifiedpricing.com/developers#mcp)
@@ -125,7 +126,7 @@ crawl or LinkCensus query is performed. Preserve the service's status, reason,
 seed/competitors, discovery, comparison and selection-policy fields unchanged;
 the human formatter does not assume a nested production response schema.
 
-MCP 0.3.1 requires client 0.1.3. The free account allowance is
+MCP 0.3.2 requires client 0.1.3. The free account allowance is
 **1,000 weighted units per day and 10,000 per month per account**, shared across
 REST, CLI and all MCP sessions. Use `get_usage` for returned account limits and
 remaining allowance; starting another session or key does not reset it.

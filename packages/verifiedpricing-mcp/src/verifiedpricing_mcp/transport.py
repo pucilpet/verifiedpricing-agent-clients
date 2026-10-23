@@ -175,7 +175,7 @@ class ReadStream(StreamBase):
                     return self.decode(frame, raw.get("id"))
                 except Exception:
                     raise TransportClosed() from None
-        except (TransportClosed, OSError, TimeoutError):
+        except (TransportClosed, OSError, asyncio.TimeoutError):
             await self.aclose()
             self.admission.closed_event.set()
             raise anyio.EndOfStream from None
@@ -228,7 +228,7 @@ class WriteStream(StreamBase):
             await asyncio.wait_for(self._write(encoded), WRITE_SECONDS)
             if "method" not in value and "id" in value:
                 self.admission.release(value["id"])
-        except (OSError, ValueError, TimeoutError, TransportClosed):
+        except (OSError, ValueError, asyncio.TimeoutError, TransportClosed):
             self.closed = True
             self.admission.closed_event.set()
             raise anyio.BrokenResourceError from None

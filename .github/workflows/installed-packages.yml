@@ -49,7 +49,7 @@ jobs:
           for module in (verifiedpricing_client, verifiedpricing_mcp, mcp):
               assert pathlib.Path(module.__file__).resolve().is_relative_to(prefix)
           assert verifiedpricing_client.__version__ == "0.1.3"
-          assert verifiedpricing_mcp.__version__ == "0.3.1"
+          assert verifiedpricing_mcp.__version__ == "0.3.2"
           assert importlib.metadata.version("mcp") == "2.3.0"
           tests = pathlib.Path(sys.argv[1]).resolve()
           sys.path.insert(0, str(tests))
@@ -62,7 +62,7 @@ jobs:
           for name, module in tuple(sys.modules.items()):
               if name.startswith(("verifiedpricing_client", "verifiedpricing_mcp")) and getattr(module, "__file__", None):
                   assert pathlib.Path(module.__file__).resolve().is_relative_to(prefix), name
-          expected = 49 if sys.argv[2] == "verifiedpricing-client" else 32 if core_only else 56
+          expected = 49 if sys.argv[2] == "verifiedpricing-client" else 33 if core_only else 57
           assert result.testsRun == expected, result.testsRun
           assert not result.skipped, result.skipped
           sys.exit(not result.wasSuccessful())
