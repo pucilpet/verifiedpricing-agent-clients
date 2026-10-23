@@ -1,7 +1,7 @@
 # Local MCP integration
 
-The upcoming `verifiedpricing-mcp==0.3.0` gateway uses
-`verifiedpricing-client==0.1.2` and the official `mcp==2.3.0` SDK. The client stays
+The upcoming `verifiedpricing-mcp==0.3.1` gateway uses
+`verifiedpricing-client==0.1.3` and the official `mcp==2.3.0` SDK. The client stays
 stdlib-only. See the [gateway README](../verifiedpricing-mcp/README.md) for
 release assets, installation, launch configuration and process limits.
 

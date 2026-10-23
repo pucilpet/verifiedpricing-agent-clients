@@ -151,8 +151,11 @@ def human(payload):
         safe_title = json.dumps(str(title), ensure_ascii=True)[1:-1]
         safe_id = json.dumps(str(identifier), ensure_ascii=True)[1:-1]
         lines.append(safe_title + (" | " + safe_id if identifier and title != identifier else ""))
-        for field in ("plan", "kind", "amount", "currency", "unit", "total_cost", "effective_monthly_cost",
-                      "trust_label", "provenance", "freshness", "integrity", "dispute", "observed_at", "retrieved_at", "verified_at", "source_url", "quote",
+        for field in ("plan", "kind", "amount", "catalog_reference", "amount_supported", "comparison_eligible",
+                      "currency", "currency_display", "unit", "billing_interval", "commitment", "market", "tax",
+                      "conditions", "scope", "seats", "usage_tiers", "minimum_purchase", "discounts",
+                      "total_cost", "effective_monthly_cost", "trust_label", "provenance", "source_kind",
+                      "currentness", "freshness", "integrity", "dispute", "observed_at", "retrieved_at", "verified_at", "source_url", "source_hash", "quote",
                       "status", "reasons", "calculation"):
             if field in row:
                 lines.append("  " + field + ": " + json.dumps(row[field], ensure_ascii=True))

@@ -160,7 +160,7 @@ class SDKTests(unittest.IsolatedAsyncioTestCase):
                 "protocolVersion": "2025-11-25", "capabilities": {}, "clientInfo": {"name": "private-fixture", "version": "0.1"}}})
             initialized = await asyncio.wait_for(receive(), 3)
             self.assertEqual(initialized["result"]["protocolVersion"], "2025-11-25")
-            self.assertEqual(initialized["result"]["serverInfo"]["version"], "0.3.0")
+            self.assertEqual(initialized["result"]["serverInfo"]["version"], "0.3.1")
             await send({"jsonrpc": "2.0", "method": "notifications/initialized"})
             await send({"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}})
             listed = await asyncio.wait_for(receive(), 3)

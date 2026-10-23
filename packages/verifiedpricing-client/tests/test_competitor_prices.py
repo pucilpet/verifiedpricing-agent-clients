@@ -43,7 +43,7 @@ class CompetitorClientTests(unittest.TestCase):
 
     def sent_body(self):
         request = self.opened.call_args.args[0]
-        self.assertEqual(request.get_header("User-agent"), "verifiedpricing-client/0.1.2")
+        self.assertEqual(request.get_header("User-agent"), "verifiedpricing-client/0.1.3")
         self.assertEqual(request.method, "POST")
         self.assertEqual(request.full_url, "https://verifiedpricing.com/api/v1/competitor-prices")
         return json.loads(request.data)
@@ -67,8 +67,8 @@ class CompetitorClientTests(unittest.TestCase):
             with contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as stopped:
                 main(["--version"])
         self.assertEqual(stopped.exception.code,0)
-        self.assertEqual(output.getvalue().strip(),"verifiedpricing 0.1.2")
-        self.assertEqual(__version__,"0.1.2")
+        self.assertEqual(output.getvalue().strip(),"verifiedpricing 0.1.3")
+        self.assertEqual(__version__,"0.1.3")
         self.opened.assert_not_called()
 
     def test_product_seed_payload_preserves_scenario_selections_and_envelope(self):

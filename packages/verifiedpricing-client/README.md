@@ -1,4 +1,4 @@
-# VerifiedPricing client 0.1.2
+# VerifiedPricing client 0.1.3
 
 Python 3.10+ REST client and `verifiedpricing` command. Runtime uses only the Python
 standard library. Supported platforms: Linux and macOS with POSIX ownership/mode
@@ -18,26 +18,23 @@ account**, shared by REST, this CLI and MCP. It is not a separate allowance per
 key or transport. Consult `usage` for the account's returned limits and remaining
 budget. Admitted operations can consume units even when data is missing or partial.
 
-Client 0.1.2 adds explicit coverage requests. These commands require an API with
-coverage requests enabled and a key with the optional `coverage:request` scope.
+Client 0.1.3 retains explicit coverage requests and releases catalog-reference
+qualifications in human output: catalog provenance, amount support, comparison
+eligibility, conditions, billing and provider retrieval dates. Catalog entries
+carry the Automated pricing source label. Coverage commands
+require an API with coverage requests enabled and the optional `coverage:request` scope.
 
 ## Install and run
 
-The intended distribution channel is the
-[GitHub prerelease](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.3.0),
-not PyPI. Installation is available only when that release lists its reviewed
-assets and checksums. The expected client asset is
-`verifiedpricing_client-0.1.2-py3-none-any.whl`. Do not substitute an unreviewed
-source checkout or guess a missing download/hash.
-
-After downloading that wheel and `SHA256SUMS` from the published release, verify
-the checksum with `sha256sum -c SHA256SUMS` (Linux) or
+Download `verifiedpricing_client-0.1.3-py3-none-any.whl` and `SHA256SUMS` from the
+[GitHub prerelease v0.3.1](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.3.1).
+Verify the checksum with `sha256sum -c SHA256SUMS` (Linux) or
 `shasum -a 256 -c SHA256SUMS` (macOS), then install into an isolated environment:
 
 ```sh
 python3 -m venv ~/.venvs/verifiedpricing
 ~/.venvs/verifiedpricing/bin/python -m pip install --no-index --no-deps \
-  ./verifiedpricing_client-0.1.2-py3-none-any.whl
+  ./verifiedpricing_client-0.1.3-py3-none-any.whl
 ~/.venvs/verifiedpricing/bin/verifiedpricing --version
 ~/.venvs/verifiedpricing/bin/verifiedpricing --help
 ```
@@ -87,7 +84,7 @@ calculate, FX-convert, guess missing prices or upgrade automated provenance.
 
 ## Queue pricing research
 
-With client 0.1.2, request coverage for an existing product ID or a
+With client 0.1.3, request coverage for an existing product ID or a
 canonical lowercase domain. A new domain needs a category hint: `seo`,
 `email marketing`, `crm`, `analytics`, `project management`, `customer support`,
 `social media` or `hosting`. An optional `--product-name` accepts 1 to 120
@@ -154,8 +151,7 @@ scope or simulate a quota receipt.
 own currentness, provenance, review/capture dates, source, freshness, integrity and
 badge/comparison eligibility. Missing sources and dates display as `unknown`;
 stale historical review remains stale. Reviewed facts requiring normalization
-keep `comparison_eligible: false`; this command grants no comparison readiness
-or current-price guarantee.
+keep `comparison_eligible: false`.
 
 `--json` before or after a command prints the server's schema-version-1 envelope
 on stdout. Decimal strings, snapshots, citations and trust fields are preserved.
@@ -190,8 +186,8 @@ result = client.prices(product_id="product_id", limit=10)
 
 Methods: `prices`, `price`, `compare`, `competitor_prices`, `search`, `history`, `sources`, `records`, `usage`.
 `ClientError` exposes a safe code, message, HTTP status and Retry-After value for
-adapters. The separate `verifiedpricing-mcp` package provides local stdio; this
-library does not implement OAuth.
+adapters. The separate `verifiedpricing-mcp` package provides local stdio with personal
+API-key authentication.
 
 The new method uses keyword arguments:
 `client.competitor_prices(product_id="product:example.com", scenario={"as_of":
@@ -216,9 +212,9 @@ See [MCP_INTEGRATION.md](MCP_INTEGRATION.md) for the separate stdio gateway.
 ## Data attribution and reuse
 
 The MIT license covers this client code only. API data and cited vendor source
-content do not acquire an MIT license from this package. Retain source URLs,
+content have separate terms. Retain source URLs,
 snapshot IDs, original observation/review dates and explicit trust/freshness
-states when quoting results. No independent data redistribution or caching terms
-are asserted here; review the service's published terms before redistribution.
+states when quoting results. Review the service's published terms for
+redistribution and caching permissions.
 Do not treat a cached snapshot as a guarantee of current pricing. Refetch when
 current publication, dispute, withdrawal or integrity status matters.

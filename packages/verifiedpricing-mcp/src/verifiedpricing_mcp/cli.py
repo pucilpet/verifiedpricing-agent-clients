@@ -28,7 +28,7 @@ def main(argv=None):
     try:
         if os.name != "posix":
             raise RuntimeError()
-        if importlib.metadata.version("mcp") != "2.3.0" or importlib.metadata.version("verifiedpricing-client") != "0.1.2":
+        if importlib.metadata.version("mcp") != "2.3.0" or importlib.metadata.version("verifiedpricing-client") != "0.1.3":
             raise RuntimeError()
         from verifiedpricing_client import Client, config
         from .server import serve

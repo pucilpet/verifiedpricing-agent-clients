@@ -1,4 +1,9 @@
-# 0.3.0 - Unreleased
+# 0.3.1 - Candidate
+
+- Require exactly verifiedpricing-client 0.1.3 so human tool text includes catalog-reference qualifications.
+- Retain eleven tools, the official mcp 2.3.0 SDK, existing protocol negotiation, manual API-key authentication and unchanged structured data.
+
+# 0.3.0 - 2026-10-23
 
 - Add opt-in `request_price_coverage` and read-only `get_price_coverage_request` tools.
 - Advertise the request tool as an idempotent write; existing read tool annotations stay read-only.

@@ -157,6 +157,41 @@ class ClientTests(unittest.TestCase):
             self.assertIn(value, out)
         self.assertNotIn(KEY, out)
 
+    def test_catalog_reference_human_qualifications_and_json_passthrough(self):
+        row = {
+            "id": SNAPSHOT, "product": "Catalog fixture", "plan": "Annual",
+            "amount": "9.10", "kind": "numeric", "currency": None, "unit": "seat/month",
+            "billing_interval": "Billed annually", "commitment": {"months": 12},
+            "market": None, "tax": "unknown", "conditions": "Annual prepayment; quote \u001b[31m is untrusted",
+            "scope": {"basis": "catalog_reference"}, "seats": {"minimum": 3},
+            "usage_tiers": [], "minimum_purchase": "3 seats", "discounts": None,
+            "source_kind": "provider_retrieved_text", "source_url": "https://fixture.example/pricing",
+            "observed_at": None, "retrieved_at": "2026-10-08T12:34:56Z", "verified_at": None,
+            "currentness": "current", "freshness": "unknown", "provenance": "automated",
+            "amount_supported": False, "comparison_eligible": False, "source_hash": None,
+            "catalog_reference": {"catalog_id": "original100-reference-v1", "catalog_sha256": "b" * 64,
+                "row_sha256": "c" * 64, "plan_index": 0, "currency_display": "$",
+                "captured_at": None, "retrieved_at": "2026-10-08T12:34:56Z",
+                "capture_qualification": "provider retrieval; upstream capture time unknown"},
+        }
+        payload = {"schema_version": 1, "data": {"observations": [row], "next_offset": None},
+                   "usage": {"daily_used": 1}}
+        self.server.reply_body = json.dumps(payload).encode()
+        code, out, error = self.cli(["prices"])
+        self.assertEqual((code, error), (0, ""))
+        for field, value in row.items():
+            if field not in {"id", "product"}:
+                self.assertIn("  " + field + ": " + json.dumps(value, ensure_ascii=True), out)
+        self.assertLess(out.index("catalog_reference:"), out.index("currency:"))
+        self.assertLess(out.index("comparison_eligible:"), out.index("currency:"))
+        self.assertNotIn("\u001b", out)
+        self.assertNotIn('currency: "USD"', out)
+        self.assertNotIn(KEY, out)
+        code, out, error = self.cli(["prices", "--json"])
+        self.assertEqual((code, error), (0, ""))
+        self.assertEqual(out, json.dumps(payload, sort_keys=True, ensure_ascii=True, allow_nan=False) + "\n")
+        self.assertEqual(json.loads(out), payload)
+
     def test_redirect_is_not_followed(self):
         self.server.reply_status = 302
         self.server.reply_headers = {"Location": self.origin + "/stolen"}

@@ -3,8 +3,8 @@
 Python REST client, CLI and MCP tools for pricing snapshots, source citations,
 comparisons and explicit research requests.
 
-Bundle **v0.3.0** pairs **verifiedpricing-client 0.1.2** with
-**verifiedpricing-mcp 0.3.0**. Python 3.10+ on Linux or macOS is supported.
+Bundle **v0.3.1** pairs **verifiedpricing-client 0.1.3** with
+**verifiedpricing-mcp 0.3.1**. Python 3.10+ on Linux or macOS is supported.
 
 ## Get started
 
@@ -15,11 +15,11 @@ API key creation with scopes omitted defaults to `prices:read` only. Add the opt
 Keep your key in private environment or credential storage; do not put it in
 command arguments, URLs, tool arguments or public configuration.
 
-[Bundle v0.3.0](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.3.0)
+[Bundle v0.3.1](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.3.1)
 uses these wheel filenames:
 
-- `verifiedpricing_client-0.1.2-py3-none-any.whl`
-- `verifiedpricing_mcp-0.3.0-py3-none-any.whl`
+- `verifiedpricing_client-0.1.3-py3-none-any.whl`
+- `verifiedpricing_mcp-0.3.1-py3-none-any.whl`
 
 Download both wheels and `SHA256SUMS` from the release assets, verify their
 checksums, then install in an isolated environment:
@@ -28,8 +28,8 @@ checksums, then install in an isolated environment:
 sha256sum -c SHA256SUMS
 python3 -m venv ~/.venvs/verifiedpricing-agent
 ~/.venvs/verifiedpricing-agent/bin/python -m pip install \
-  ./verifiedpricing_client-0.1.2-py3-none-any.whl \
-  ./verifiedpricing_mcp-0.3.0-py3-none-any.whl
+  ./verifiedpricing_client-0.1.3-py3-none-any.whl \
+  ./verifiedpricing_mcp-0.3.1-py3-none-any.whl
 ```
 
 On macOS, use `shasum -a 256 -c SHA256SUMS`. The REST client uses the Python
@@ -62,9 +62,9 @@ secret substitution vary.
 ```
 
 The hosted endpoint uses the same personal account allowance. Its MCP Registry
-[entry, metadata version 0.2.0](https://registry.modelcontextprotocol.io/v0/servers/io.github.pucilpet%2Fverifiedpricing/versions/0.2.0),
+[entry, metadata version 0.3.0](https://registry.modelcontextprotocol.io/v0/servers/io.github.pucilpet%2Fverifiedpricing/versions/0.3.0),
 records the service endpoint. Use the tool list returned by the running service
-when connecting. The local 0.3.0 package provides the eleven tools below.
+when connecting. The local 0.3.1 package provides the eleven tools below.
 
 ## Eleven MCP tools
 
@@ -85,6 +85,10 @@ REST, CLI and MCP share the same account budget: the free allowance is
 limits and remaining allowance. A new key or MCP session does not reset them.
 
 ## Source-backed results
+
+Client 0.1.3 and MCP 0.3.1 retain catalog provenance, amount support, comparison
+eligibility, conditions, billing and provider retrieval dates in human output.
+Catalog entries carry the Automated pricing source label.
 
 Responses retain snapshot IDs, source URLs, observation and review dates,
 freshness, integrity and comparison eligibility. Automated observations and

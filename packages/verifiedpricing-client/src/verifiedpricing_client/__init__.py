@@ -2,5 +2,5 @@
 
 from .client import Client, ClientError
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 __all__ = ["Client", "ClientError", "__version__"]

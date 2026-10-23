@@ -72,7 +72,7 @@ class BoundsTests(unittest.TestCase):
 class LauncherVersionTests(unittest.TestCase):
     def test_candidate_launcher_requires_matching_client_before_opening_stdio(self):
         from verifiedpricing_mcp.cli import main
-        for client_version,expected in (("0.1.0",2),("0.1.1",2),("0.1.2",0)):
+        for client_version,expected in (("0.1.0",2),("0.1.1",2),("0.1.2",2),("0.1.3",0)):
             with self.subTest(client_version=client_version):
                 versions={"mcp":"2.3.0","verifiedpricing-client":client_version}
                 with patch("verifiedpricing_mcp.cli.importlib.metadata.version",side_effect=versions.__getitem__), \
@@ -98,7 +98,7 @@ class LauncherVersionTests(unittest.TestCase):
              contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as stopped:
             main(["--version"])
         self.assertEqual(stopped.exception.code,0)
-        self.assertEqual(output.getvalue().strip(),"verifiedpricing-mcp 0.3.0")
+        self.assertEqual(output.getvalue().strip(),"verifiedpricing-mcp 0.3.1")
 
 
 class AsyncBoundsTests(unittest.IsolatedAsyncioTestCase):

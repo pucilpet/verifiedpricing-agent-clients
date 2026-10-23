@@ -128,7 +128,7 @@ class Client:
         url = self.base_url + path
         if query:
             url += "?" + urllib.parse.urlencode(query)
-        headers = {"Accept": "application/json", "User-Agent": "verifiedpricing-client/0.1.2"}
+        headers = {"Accept": "application/json", "User-Agent": "verifiedpricing-client/0.1.3"}
         if self._key:
             headers["Authorization"] = "Bearer " + self._key
         try:

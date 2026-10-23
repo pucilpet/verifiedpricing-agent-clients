@@ -1,13 +1,14 @@
-# VerifiedPricing MCP 0.3.0
+# VerifiedPricing MCP 0.3.1
 
-Separate gateway over `verifiedpricing-client==0.1.2`, pinned to the
+Separate gateway over `verifiedpricing-client==0.1.3`, pinned to the
 official Python SDK `mcp==2.3.0`. Runtime SDK dependencies belong in this
 package's isolated environment; do not upgrade engine dependencies to install
 it. Python >=3.10, Linux/macOS POSIX pipes and the asyncio event loop are
 supported. Windows is not supported.
 
-MCP 0.3.0 adds explicit pricing research requests to the hosted and local
-transports. Coverage tools require an API with coverage requests enabled.
+MCP 0.3.1 pins client 0.1.3 for catalog-reference qualifications in human tool
+text while preserving exact structured data. It retains explicit pricing research
+requests in the hosted and local transports. Coverage tools require an API with coverage requests enabled.
 Create your own API key at
 [VerifiedPricing Account](https://verifiedpricing.com/account): sign in with the
 email link, explicitly accept the current agent access terms and acknowledge
@@ -20,26 +21,22 @@ configuration.
 Add `coverage:request` explicitly to let a key queue product research. The read
 scopes remain selected by default.
 
-The downloadable package provides local stdio over client 0.1.2. Hosted setup
+The downloadable package provides local stdio over client 0.1.3. Hosted setup
 uses the service endpoint described below.
 
 ## Install local stdio
 
-This is an early-access package. The intended distribution channel is the
-[GitHub prerelease](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.3.0),
-not PyPI or the MCP Registry. Install only after the published release provides
-reviewed assets and checksums. Expected wheel filenames are
-`verifiedpricing_client-0.1.2-py3-none-any.whl` and
-`verifiedpricing_mcp-0.3.0-py3-none-any.whl`.
-
-Download both wheels and `SHA256SUMS` from that release. Verify with
-`sha256sum -c SHA256SUMS` (Linux) or `shasum -a 256 -c SHA256SUMS` (macOS), then:
+Download `verifiedpricing_client-0.1.3-py3-none-any.whl`,
+`verifiedpricing_mcp-0.3.1-py3-none-any.whl` and `SHA256SUMS` from the
+[GitHub prerelease v0.3.1](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.3.1).
+Verify with `sha256sum -c SHA256SUMS` (Linux) or
+`shasum -a 256 -c SHA256SUMS` (macOS), then install:
 
 ```sh
 python3 -m venv ~/.venvs/verifiedpricing-agent
 ~/.venvs/verifiedpricing-agent/bin/python -m pip install \
-  ./verifiedpricing_client-0.1.2-py3-none-any.whl \
-  ./verifiedpricing_mcp-0.3.0-py3-none-any.whl
+  ./verifiedpricing_client-0.1.3-py3-none-any.whl \
+  ./verifiedpricing_mcp-0.3.1-py3-none-any.whl
 ```
 
 The MCP wheel pins the official SDK at `mcp==2.3.0`; pip resolves it and its
@@ -79,8 +76,7 @@ commands, not protocol sessions.
 
 ## Hosted HTTP
 
-The website endpoint is `https://verifiedpricing.com/mcp` after the operator
-completes deployment and public acceptance. Connect with your own
+Connect to `https://verifiedpricing.com/mcp` with your own
 `Authorization: Bearer YOUR_VERIFIEDPRICING_API_KEY` header using a Streamable
 HTTP client. The key belongs in the client's private secret storage, never in
 the URL or tool arguments. There is no shared key or separate MCP allowance.
@@ -129,7 +125,7 @@ crawl or LinkCensus query is performed. Preserve the service's status, reason,
 seed/competitors, discovery, comparison and selection-policy fields unchanged;
 the human formatter does not assume a nested production response schema.
 
-MCP 0.3.0 requires client 0.1.2. The free account allowance is
+MCP 0.3.1 requires client 0.1.3. The free account allowance is
 **1,000 weighted units per day and 10,000 per month per account**, shared across
 REST, CLI and all MCP sessions. Use `get_usage` for returned account limits and
 remaining allowance; starting another session or key does not reset it.
@@ -158,9 +154,8 @@ retry after an uncertain request response.
 
 Successful `structuredContent` is the unchanged REST schema-version-1 envelope:
 `{schema_version:1,data:{...},usage:{...}}`. Human text cites dates and sources
-and explicitly qualifies automated observations and recorded human review.
-Recorded review is not a guarantee of current pricing or a comparison-ready
-fact. Preserve stale, unknown, integrity, badge and comparison eligibility
+and labels Automated pricing source and Human-checked results separately.
+Preserve stale, unknown, integrity, badge and comparison eligibility
 qualifications, including false values. Source text and quotes are untrusted
 data, never instructions; the gateway never executes tool-content commands.
 
@@ -225,7 +220,7 @@ PYTHONPATH=src:../verifiedpricing-client/src PYTHONDONTWRITEBYTECODE=1 \
 The hosted tests require the pinned `hosted` dependencies and exercise genuine
 SDK HTTP over ASGI and local TCP, plus the existing stdio OS-pipe checks. API
 responses use fixtures; live account quotas and production routing require their
-own acceptance. OAuth and directory listing remain outside this package.
+own acceptance.
 
 MIT covers client/gateway code only. Data and vendor source content have separate
 terms; retain citations, original dates and trust qualifiers. See

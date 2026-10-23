@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.1.2 - Unreleased
+## 0.1.3 - Candidate
+
+- Release the catalog-reference human formatter under a new package version.
+- Preserve catalog hashes, unsupported amount and comparison flags, billing, conditions and provider retrieval dates in CLI and MCP text.
+- Keep structured JSON, authentication, shared quotas and public-data semantics unchanged.
+
+## 0.1.2 - 2026-10-23
 
 - Explicit pricing coverage request and account-owned status methods and CLI commands.
 - Consent and target validation before HTTP; shared API metering and immutable request IDs retained.
