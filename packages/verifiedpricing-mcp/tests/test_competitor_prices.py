@@ -50,7 +50,7 @@ class CompetitorToolTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(failed)
         self.assertIs(payload,PAYLOAD)
         self.assertEqual(client.calls,[arguments])
-        self.assertEqual(len(TOOLS),9)
+        self.assertIn("get_competitor_prices", TOOLS)
         schema=TOOLS["get_competitor_prices"][1]
         self.assertNotIn("competitor_product_id",schema["required"])
         for value in ("","bad/id","x"*129,True,123,None,[]):

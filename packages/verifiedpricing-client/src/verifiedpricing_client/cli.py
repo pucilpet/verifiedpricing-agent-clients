@@ -10,7 +10,7 @@ import re
 import sys
 
 from . import __version__
-from .client import Client, ClientError
+from .client import COVERAGE_CATEGORIES, Client, ClientError
 from . import config
 
 
@@ -38,7 +38,8 @@ def parser():
     root = Parser(prog="verifiedpricing", parents=[common], description="Dated source-backed pricing. Automated observations are not human verification.")
     root.add_argument("--version", action="version", version="%(prog)s " + __version__)
     commands = root.add_subparsers(dest="command", required=True, parser_class=Parser)
-    for name in ("prices", "price", "compare", "competitors", "usage", "search", "history", "sources", "records", "configure"):
+    for name in ("prices", "price", "compare", "competitors", "usage", "search", "history", "sources", "records",
+                 "coverage-request", "coverage-status", "configure"):
         child = commands.add_parser(name, parents=[common])
         if name in {"prices", "history", "search"}:
             child.add_argument("--limit", type=int, default=20)
@@ -53,6 +54,16 @@ def parser():
             child.add_argument("query")
         elif name == "records":
             child.add_argument("domain", help="Domain for dated reviewed facts and history")
+        elif name == "coverage-request":
+            target = child.add_mutually_exclusive_group(required=True)
+            target.add_argument("--product-id", help="Existing product ID")
+            target.add_argument("--domain", help="Canonical lowercase product domain")
+            child.add_argument("--category", choices=COVERAGE_CATEGORIES, help="Required for domain research")
+            child.add_argument("--product-name", help="Optional product name for research")
+            child.add_argument("--consent", action="store_true", required=True,
+                               help="Explicitly queue pricing research using the shared crawl allowance")
+        elif name == "coverage-status":
+            child.add_argument("request_id", help="Your pricing coverage request ID")
         elif name in {"compare", "competitors"}:
             if name == "compare":
                 child.add_argument("snapshots", nargs="+", help="Two or three pinned snapshot IDs")
@@ -104,6 +115,14 @@ def scenario(args):
 
 def human(payload):
     data = payload["data"]
+    if isinstance(data.get("id"), str) and re.fullmatch(r"cr_[0-9a-f]{32}", data["id"]):
+        ordered = [name for name in ("id", "status", "domain", "product_id", "category", "product_name",
+                                    "reason", "revision", "snapshot_id", "record_url") if name in data]
+        ordered.extend(sorted(set(data) - set(ordered)))
+        lines = [name + ": " + json.dumps(data[name], sort_keys=True, ensure_ascii=True) for name in ordered]
+        if payload.get("usage"):
+            lines.append("Usage: " + json.dumps(payload["usage"], sort_keys=True, ensure_ascii=True))
+        return "\n".join(lines)
     if "competitors" in data or "seed" in data:
         # Render top-level service fields without guessing nested discovery/coverage schemas.
         ordered = [name for name in ("status", "reason", "seed", "competitors", "discovery", "comparison", "selection_policy") if name in data]
@@ -224,6 +243,11 @@ def main(argv=None):
                 payload = client.sources(args.snapshot)
             elif args.command == "records":
                 payload = client.records(args.domain)
+            elif args.command == "coverage-request":
+                payload = client.request_price_coverage(consent=args.consent, product_id=args.product_id,
+                    domain=args.domain, category=args.category, product_name=args.product_name)
+            elif args.command == "coverage-status":
+                payload = client.price_coverage_request(args.request_id)
             else:
                 payload = client.usage()
         print(json.dumps(payload, sort_keys=True, ensure_ascii=True, allow_nan=False) if json_output else human(payload))

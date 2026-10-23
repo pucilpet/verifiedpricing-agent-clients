@@ -1,3 +1,3 @@
-"""Local stdio gateway; hosted MCP/OAuth is a separate integration."""
+"""Bounded stdio gateway and optional operator-hosted HTTP transport."""
 
-__version__ = "0.1.1"
+__version__ = "0.3.0"

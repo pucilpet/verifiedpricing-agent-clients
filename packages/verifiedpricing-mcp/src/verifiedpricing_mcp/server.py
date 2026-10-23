@@ -4,7 +4,7 @@ import asyncio
 
 from . import __version__
 from .runner import SerialRunner
-from .tools import TOOLS, execute
+from .tools import IDEMPOTENT_TOOLS, TOOLS, WRITE_TOOLS, execute
 from .transport import Admission, ReadStream, WriteStream
 
 
@@ -15,8 +15,8 @@ def create_server(client, runner):
     async def list_tools(ctx, params):
         return types.ListToolsResult(tools=[
             types.Tool(name=name, description=description, input_schema=input_schema,
-                       annotations=types.ToolAnnotations(read_only_hint=True, destructive_hint=False,
-                                                         idempotent_hint=False, open_world_hint=True))
+                       annotations=types.ToolAnnotations(read_only_hint=name not in WRITE_TOOLS, destructive_hint=False,
+                                                         idempotent_hint=name in IDEMPOTENT_TOOLS, open_world_hint=True))
             for name, (description, input_schema) in TOOLS.items()
         ])
 

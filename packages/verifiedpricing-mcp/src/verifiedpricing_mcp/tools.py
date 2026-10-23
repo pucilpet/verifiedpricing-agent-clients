@@ -6,6 +6,7 @@ import json
 import re
 
 from verifiedpricing_client import ClientError
+from verifiedpricing_client.client import COVERAGE_CATEGORIES
 from verifiedpricing_client.cli import human
 
 from .runner import Busy, DeadlineExceeded, OperationFailed
@@ -47,6 +48,17 @@ COMPETITORS = schema({
 }, ("scenario",))
 COMPETITORS["oneOf"] = [{"required": ["product_id"]}, {"required": ["domain"]}]
 
+COVERAGE_REQUEST = schema({
+    "consent": {"type": "boolean", "const": True,
+                "description": "Explicit user consent to queue pricing research"},
+    "product_id": _PRODUCT_ID,
+    "domain": COMPETITORS["properties"]["domain"],
+    "category": {"type": "string", "enum": list(COVERAGE_CATEGORIES),
+                 "description": "Research hint; the API requires it for an unknown domain"},
+    "product_name": {"type": "string", "minLength": 1, "maxLength": 120},
+}, ("consent",))
+COVERAGE_REQUEST["oneOf"] = [{"required": ["product_id"]}, {"required": ["domain"]}]
+
 TOOLS = {
     "search_products": ("Search bounded published products, not a completeness guarantee.", schema({"query": {"type": "string", "minLength": 1, "maxLength": 100}, **_PAGE}, ("query",))),
     "get_prices": ("List published automated snapshots with source dates and explicit qualifications.", schema({"product_id": _IDENTIFIER, **_PAGE})),
@@ -57,7 +69,12 @@ TOOLS = {
     "get_sources": ("Read retained source metadata and integrity qualification for a snapshot.", schema({"snapshot_id": _SNAPSHOT}, ("snapshot_id",))),
     "get_reviewed_records": ("Read recorded human-review qualifications per fact; stale, unknown, badge and comparison eligibility remain explicit.", schema({"domain": {"type": "string", "minLength": 3, "maxLength": 253}}, ("domain",))),
     "get_usage": ("Read shared account budgets without granting a new allowance.", schema()),
+    "request_price_coverage": ("Queue pricing research for a product after explicit user consent. Requires coverage:request. Returns your deduplicated request ID; creating a request uses one shared API unit and research follows the existing crawl schedule.", COVERAGE_REQUEST),
+    "get_price_coverage_request": ("Read your pricing research request status and published result. Requires prices:read; status polling uses no allowance units.", schema({"request_id": {"type": "string", "pattern": "^cr_[0-9a-f]{32}$"}}, ("request_id",))),
 }
+
+WRITE_TOOLS = frozenset({"request_price_coverage"})
+IDEMPOTENT_TOOLS = frozenset({"request_price_coverage", "get_price_coverage_request"})
 
 
 class InvalidInput(Exception):
@@ -65,6 +82,10 @@ class InvalidInput(Exception):
 
 
 def validate(value, rule):
+    if "const" in rule and (type(value) is not type(rule["const"]) or value != rule["const"]):
+        raise InvalidInput()
+    if "enum" in rule and value not in rule["enum"]:
+        raise InvalidInput()
     kind = rule["type"]
     if kind == "object":
         if (not isinstance(value, dict) or len(value) > rule.get("maxProperties", 100)
@@ -108,6 +129,10 @@ def operation(client, name, arguments):
     if name not in TOOLS:
         raise InvalidInput()
     validate(arguments, TOOLS[name][1])
+    if name == "request_price_coverage":
+        return lambda: client.request_price_coverage(**arguments)
+    if name == "get_price_coverage_request":
+        return lambda: client.price_coverage_request(arguments["request_id"])
     if name in {"compare_prices", "get_competitor_prices"}:
         scenario = arguments["scenario"]
         try:
@@ -143,8 +168,9 @@ async def execute(client, runner, name, arguments):
     try:
         action = operation(client, name, arguments)
         payload = await runner.run(action)
-        text = ("Source-backed data. Automated observations are not human verification; recorded review remains qualified per fact.\n"
-                + human(payload))
+        lead = ("Pricing research request.\n" if name in {"request_price_coverage", "get_price_coverage_request"} else
+                "Source-backed data. Automated observations are not human verification; recorded review remains qualified per fact.\n")
+        text = lead + human(payload)
         text_bytes = text.encode("utf-8")
         if len(text_bytes) > MAX_TEXT_BYTES:
             text = text_bytes[:MAX_TEXT_BYTES - 96].decode("utf-8", errors="ignore") + "\nText truncated; full qualifications remain in structuredContent."

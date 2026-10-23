@@ -4,12 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "verifiedpricing-mcp"
-version = "0.1.1"
-description = "Bounded local MCP stdio gateway over VerifiedPricing REST"
+version = "0.3.0"
+description = "Bounded stdio and optional hosted HTTP MCP over VerifiedPricing REST"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
-dependencies = ["verifiedpricing-client==0.1.1", "mcp==2.3.0"]
+dependencies = ["verifiedpricing-client==0.1.2", "mcp==2.3.0"]
+
+[project.optional-dependencies]
+hosted = ["httpx2==2.13.1", "uvicorn==0.54.0", "starlette==1.8.0"]
 
 [project.scripts]
 verifiedpricing-mcp = "verifiedpricing_mcp.cli:main"

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2 - Unreleased
+
+- Explicit pricing coverage request and account-owned status methods and CLI commands.
+- Consent and target validation before HTTP; shared API metering and immutable request IDs retained.
+- Request status text includes the domain, hints, reason, revision and published snapshot.
+
 ## 0.1.1 - Candidate
 
 - Optional exact competitor product filter in the Python client and CLI.

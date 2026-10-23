@@ -72,7 +72,7 @@ class BoundsTests(unittest.TestCase):
 class LauncherVersionTests(unittest.TestCase):
     def test_candidate_launcher_requires_matching_client_before_opening_stdio(self):
         from verifiedpricing_mcp.cli import main
-        for client_version,expected in (("0.1.0",2),("0.1.1",0)):
+        for client_version,expected in (("0.1.0",2),("0.1.1",2),("0.1.2",0)):
             with self.subTest(client_version=client_version):
                 versions={"mcp":"2.3.0","verifiedpricing-client":client_version}
                 with patch("verifiedpricing_mcp.cli.importlib.metadata.version",side_effect=versions.__getitem__), \
@@ -98,7 +98,7 @@ class LauncherVersionTests(unittest.TestCase):
              contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as stopped:
             main(["--version"])
         self.assertEqual(stopped.exception.code,0)
-        self.assertEqual(output.getvalue().strip(),"verifiedpricing-mcp 0.1.1")
+        self.assertEqual(output.getvalue().strip(),"verifiedpricing-mcp 0.3.0")
 
 
 class AsyncBoundsTests(unittest.IsolatedAsyncioTestCase):
@@ -174,7 +174,7 @@ class AsyncBoundsTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(payload["error"]["code"], "invalid_input")
         self.assertEqual(client.calls, [])
 
-    async def test_every_tool_has_fixed_read_surface(self):
+    async def test_every_tool_has_a_fixed_bounded_surface(self):
         client = FakeClient()
         identifier = "po_" + "a" * 64
         second = "po_" + "b" * 64
@@ -186,12 +186,14 @@ class AsyncBoundsTests(unittest.IsolatedAsyncioTestCase):
                 "as_of": "2026-10-17T00:00:00Z", "currency": "USD", "market": "US"}},
             "get_price_history": {"product_id": "fixture"}, "get_sources": {"snapshot_id": identifier},
             "get_reviewed_records": {"domain": "fixture.example"}, "get_usage": {},
+            "request_price_coverage": {"product_id": "fixture", "consent": True},
+            "get_price_coverage_request": {"request_id": "cr_" + "a" * 32},
         }
         self.assertEqual(set(scenarios), set(TOOLS))
         for name, arguments in scenarios.items():
             _, _, error = await execute(client, SerialRunner(), name, arguments)
             self.assertFalse(error, name)
-        self.assertEqual(len(client.calls), 9)
+        self.assertEqual(len(client.calls), 11)
 
     async def test_human_text_is_capped_but_structured_qualifications_preserved(self):
         envelope = {"schema_version": 1, "data": {"observations": [{"product": "x" * 12000,

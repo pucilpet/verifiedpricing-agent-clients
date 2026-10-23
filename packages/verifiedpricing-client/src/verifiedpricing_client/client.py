@@ -13,6 +13,9 @@ import urllib.request
 MAX_BODY_BYTES = 512 * 1024
 _SNAPSHOT = re.compile(r"po_[0-9a-f]{64}\Z")
 _DOMAIN = re.compile(r"(?=.{1,253}\Z)(?!-)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}\Z")
+_COVERAGE_REQUEST = re.compile(r"cr_[0-9a-f]{32}\Z")
+COVERAGE_CATEGORIES = ("seo", "email marketing", "crm", "analytics", "project management",
+                       "customer support", "social media", "hosting")
 
 
 class ClientError(Exception):
@@ -125,7 +128,7 @@ class Client:
         url = self.base_url + path
         if query:
             url += "?" + urllib.parse.urlencode(query)
-        headers = {"Accept": "application/json", "User-Agent": "verifiedpricing-client/0.1.1"}
+        headers = {"Accept": "application/json", "User-Agent": "verifiedpricing-client/0.1.2"}
         if self._key:
             headers["Authorization"] = "Bearer " + self._key
         try:
@@ -230,6 +233,38 @@ class Client:
         if not _DOMAIN.fullmatch(domain):
             raise ClientError("input", "Provide a domain name without a URL or IP address")
         return self.request("GET", "/api/v1/records/" + domain)
+
+    def request_price_coverage(self, *, consent=False, product_id=None, domain=None,
+                               category=None, product_name=None):
+        if consent is not True:
+            raise ClientError("input", "Explicit consent is required to queue pricing research")
+        if (product_id is None) == (domain is None):
+            raise ClientError("input", "Provide exactly one product ID or canonical domain")
+        body = {"consent": True}
+        if product_id is not None:
+            if not isinstance(product_id, str) or not re.fullmatch(r"[A-Za-z0-9:_.-]{1,128}", product_id):
+                raise ClientError("input", "Invalid product identifier")
+            body["product_id"] = product_id
+        else:
+            if not isinstance(domain, str) or not _DOMAIN.fullmatch(domain):
+                raise ClientError("input", "Provide a canonical lowercase domain without a URL or IP address")
+            body["domain"] = domain
+        if category is not None:
+            if not isinstance(category, str) or category not in COVERAGE_CATEGORIES:
+                raise ClientError("input", "Unsupported pricing research category")
+            body["category"] = category
+        if product_name is not None:
+            if (not isinstance(product_name, str) or not 1 <= len(product_name) <= 120
+                    or product_name != product_name.strip() or any(ord(c) < 32 or ord(c) == 127
+                                                     or c in "\u2028\u2029" for c in product_name)):
+                raise ClientError("input", "Provide a bounded product name")
+            body["product_name"] = product_name
+        return self.request("POST", "/api/v1/coverage-requests", body=body)
+
+    def price_coverage_request(self, request_id):
+        if not isinstance(request_id, str) or not _COVERAGE_REQUEST.fullmatch(request_id):
+            raise ClientError("input", "Invalid pricing coverage request identifier")
+        return self.request("GET", "/api/v1/coverage-requests/" + request_id)
 
     def competitor_prices(self, *, scenario, product_id=None, domain=None, limit=3, selections=None, competitor_product_id=None):
         if (product_id is None) == (domain is None):

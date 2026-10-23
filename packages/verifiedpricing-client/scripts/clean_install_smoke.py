@@ -43,23 +43,48 @@ def main(argv=None):
         python = root / "venv/bin/python"
         command = root / "venv/bin/verifiedpricing"
         run([str(python), "-m", "pip", "--isolated", "install", "--no-index", "--no-deps", str(wheel)])
-        run([str(python), "-c", "import pathlib, sys, verifiedpricing_client as c; assert pathlib.Path(c.__file__).is_relative_to(pathlib.Path(sys.prefix)); assert c.__version__ == '0.1.1'"])
+        run([str(python), "-c", "import pathlib, sys, verifiedpricing_client as c; assert pathlib.Path(c.__file__).is_relative_to(pathlib.Path(sys.prefix)); assert c.__version__ == '0.1.2'"])
         version = run([str(command), "--version"]).strip()
-        if version != "verifiedpricing 0.1.1" or "records" not in run([str(command), "--help"]):
+        help_text = run([str(command), "--help"])
+        if version != "verifiedpricing 0.1.2" or any(name not in help_text for name in ("records", "coverage-request", "coverage-status")):
             raise RuntimeError("Installed console metadata does not match")
         calls = []
         payload = {"schema_version": 1, "data": {"account_budget": "shared_across_transports"},
                    "usage": {"day": {"used": 0, "limit": 1000}}}
+        request_id = "cr_" + "a" * 32
+        coverage = {"schema_version": 1, "data": {"id": request_id, "status": "queued",
+                    "domain": "product.example", "canonical_domain": None, "category": "crm", "revision": 0},
+                    "usage": {"day": {"used": 1, "limit": 1000}}}
+        submitted = []
         class Handler(BaseHTTPRequestHandler):
             def log_message(self, *args):
                 pass
 
             def do_GET(self):
                 calls.append((self.path, self.headers.get("Authorization")))
+                if self.path not in ("/api/v1/usage", "/api/v1/coverage-requests/" + request_id):
+                    self.send_error(404)
+                    return
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
-                self.wfile.write(json.dumps(payload).encode())
+                self.wfile.write(json.dumps(coverage if self.path.endswith(request_id) else payload).encode())
+
+            def do_POST(self):
+                calls.append((self.path, self.headers.get("Authorization")))
+                length = int(self.headers.get("Content-Length", "0"))
+                if self.path != "/api/v1/coverage-requests" or not 0 < length <= 16384:
+                    self.send_error(422)
+                    return
+                body = json.loads(self.rfile.read(length))
+                if body != {"domain": "product.example", "category": "crm", "consent": True}:
+                    self.send_error(422)
+                    return
+                submitted.append(body)
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps(coverage).encode())
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
@@ -73,6 +98,20 @@ def main(argv=None):
                 raise RuntimeError("Installed human output omits shared budget")
             if calls != [("/api/v1/usage", "Bearer " + FIXTURE_KEY)] * 2:
                 raise RuntimeError("Installed request routing or authentication differs")
+            prefix = arguments[:-1]
+            research = [*prefix, "coverage-request", "--domain", "product.example", "--category", "crm", "--consent", "--json"]
+            if json.loads(run(research)) != coverage:
+                raise RuntimeError("Installed coverage request differs from fixture")
+            if json.loads(run([*prefix, "coverage-status", request_id, "--json"])) != coverage:
+                raise RuntimeError("Installed coverage status differs from fixture")
+            if json.loads(run(research)) != coverage or len(submitted) != 2:
+                raise RuntimeError("Installed repeated coverage request differs")
+            expected = [("/api/v1/usage", "Bearer " + FIXTURE_KEY)] * 2 + [
+                ("/api/v1/coverage-requests", "Bearer " + FIXTURE_KEY),
+                ("/api/v1/coverage-requests/" + request_id, "Bearer " + FIXTURE_KEY),
+                ("/api/v1/coverage-requests", "Bearer " + FIXTURE_KEY)]
+            if calls != expected:
+                raise RuntimeError("Installed coverage routing, credentials or request count differs")
         finally:
             server.shutdown()
             server.server_close()

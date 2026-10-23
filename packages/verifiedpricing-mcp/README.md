@@ -1,19 +1,14 @@
-# VerifiedPricing MCP stdio gateway 0.1.1
+# VerifiedPricing MCP 0.3.0
 
-Separate local gateway over `verifiedpricing-client==0.1.1`, pinned to the
+Separate gateway over `verifiedpricing-client==0.1.2`, pinned to the
 official Python SDK `mcp==2.3.0`. Runtime SDK dependencies belong in this
 package's isolated environment; do not upgrade engine dependencies to install
 it. Python >=3.10, Linux/macOS POSIX pipes and the asyncio event loop are
 supported. Windows is not supported.
 
-This package provides local stdio. To connect without installing Python packages,
-use the hosted Streamable HTTP service at **https://verifiedpricing.com/mcp** with
-your personal key in `Authorization: Bearer YOUR_VERIFIEDPRICING_API_KEY`. Store
-it in the MCP client's private secret settings. Hosted access uses the same nine
-tools, key scopes and shared account allowance as local stdio, with no OAuth
-sign-in flow. See the [hosted setup](../../README.md#hosted-mcp).
-
-Create your own read key on the website at
+MCP 0.3.0 adds explicit pricing research requests to the hosted and local
+transports. Coverage tools require an API with coverage requests enabled.
+Create your own API key at
 [VerifiedPricing Account](https://verifiedpricing.com/account): sign in with the
 email link, explicitly accept the current agent access terms and acknowledge
 the privacy notice, then create a key. The account form initially selects both
@@ -22,29 +17,29 @@ competitor prices. [Developers](https://verifiedpricing.com/developers) describe
 the API endpoints and scopes. This website sign-in is separate from local stdio
 configuration.
 
-Version 0.1.1 includes the optional exact competitor filter, which is absent
-from 0.1.0.
+Add `coverage:request` explicitly to let a key queue product research. The read
+scopes remain selected by default.
 
-## Install and launch
+The downloadable package provides local stdio over client 0.1.2. Hosted setup
+uses the service endpoint described below.
 
-Download version 0.1.1 from the
-[GitHub release](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.1.1),
-which provides wheels, source archives and `SHA256SUMS`. The hosted service has
-an [official MCP Registry entry](https://registry.modelcontextprotocol.io/v0/servers/io.github.pucilpet%2Fverifiedpricing/versions/0.2.0);
-its metadata version 0.2.0 is separate from this local package version 0.1.1.
-No PyPI publication is claimed here. The wheel filenames are
-`verifiedpricing_client-0.1.1-py3-none-any.whl` and
-`verifiedpricing_mcp-0.1.1-py3-none-any.whl`.
+## Install local stdio
 
-Download both wheels and `SHA256SUMS` from that release. Run `sha256sum *.whl`
-(Linux) or `shasum -a 256 *.whl` (macOS), compare each wheel hash with its entry
-in `SHA256SUMS`, and install only if both match:
+This is an early-access package. The intended distribution channel is the
+[GitHub prerelease](https://github.com/pucilpet/verifiedpricing-agent-clients/releases/tag/v0.3.0),
+not PyPI or the MCP Registry. Install only after the published release provides
+reviewed assets and checksums. Expected wheel filenames are
+`verifiedpricing_client-0.1.2-py3-none-any.whl` and
+`verifiedpricing_mcp-0.3.0-py3-none-any.whl`.
+
+Download both wheels and `SHA256SUMS` from that release. Verify with
+`sha256sum -c SHA256SUMS` (Linux) or `shasum -a 256 -c SHA256SUMS` (macOS), then:
 
 ```sh
 python3 -m venv ~/.venvs/verifiedpricing-agent
 ~/.venvs/verifiedpricing-agent/bin/python -m pip install \
-  ./verifiedpricing_client-0.1.1-py3-none-any.whl \
-  ./verifiedpricing_mcp-0.1.1-py3-none-any.whl
+  ./verifiedpricing_client-0.1.2-py3-none-any.whl \
+  ./verifiedpricing_mcp-0.3.0-py3-none-any.whl
 ```
 
 The MCP wheel pins the official SDK at `mcp==2.3.0`; pip resolves it and its
@@ -82,10 +77,28 @@ stderr, and SDK diagnostic/telemetry logging is disabled to avoid retaining tool
 arguments. Startup errors are generic. `--help` and `--version` are terminal
 commands, not protocol sessions.
 
+## Hosted HTTP
+
+The website endpoint is `https://verifiedpricing.com/mcp` after the operator
+completes deployment and public acceptance. Connect with your own
+`Authorization: Bearer YOUR_VERIFIEDPRICING_API_KEY` header using a Streamable
+HTTP client. The key belongs in the client's private secret storage, never in
+the URL or tool arguments. There is no shared key or separate MCP allowance.
+Initialize and list-tools authenticate without debiting pricing units; tool
+calls use existing API scopes, revocation and shared account limits.
+
+The source provides `python -m verifiedpricing_mcp.http` for the standalone
+operator service, using the optional pinned `hosted` dependencies. The service
+has fixed internal engine routing. The generic transport lives
+inside the product namespace to avoid collisions with other MCP packages.
+See [hosted client setup](https://verifiedpricing.com/developers#mcp)
+for endpoint, authorization and tool instructions.
+
 ## Tools and truth
 
 Tools: `search_products`, `get_prices`, `get_price`, `compare_prices`,
-`get_competitor_prices`, `get_price_history`, `get_sources`, `get_reviewed_records`, `get_usage`.
+`get_competitor_prices`, `get_price_history`, `get_sources`, `get_reviewed_records`, `get_usage`,
+`request_price_coverage`, `get_price_coverage_request`.
 Tool definitions expose fixed bounded JSON schemas; no tool can change the API
 origin, supply credentials, request arbitrary URLs, submit raw prices or grant
 verification/provenance. Searches and histories expose pagination rather than
@@ -116,10 +129,32 @@ crawl or LinkCensus query is performed. Preserve the service's status, reason,
 seed/competitors, discovery, comparison and selection-policy fields unchanged;
 the human formatter does not assume a nested production response schema.
 
-Client and gateway are compatible at version 0.1.1. The free account allowance is
+MCP 0.3.0 requires client 0.1.2. The free account allowance is
 **1,000 weighted units per day and 10,000 per month per account**, shared across
 REST, CLI and all MCP sessions. Use `get_usage` for returned account limits and
 remaining allowance; starting another session or key does not reset it.
+
+### Request missing coverage
+
+`request_price_coverage` is the explicit write tool. Supply `consent: true` and
+exactly one existing `product_id` or canonical lowercase `domain`. An unknown
+domain also needs a supported category (`seo`, `email marketing`, `crm`, `analytics`,
+`project management`, `customer support`, `social media` or `hosting`); an optional
+`product_name` is limited to 120 characters. The key needs `coverage:request`.
+The API can use a known domain's existing category. Preserve absent hints when
+replaying a request created without them.
+
+The first request for an account and target costs one shared API unit. Identical
+repeats return the same request ID without another debit. Research joins the
+regular paced crawler, and `get_price_coverage_request` reads your request status
+using `prices:read` without charging allowance units. Both tools retain execution
+limits. When status is `available`, use its `snapshot_id` to read the published
+price. A `held` status includes the reason requiring attention.
+
+The request tool advertises `readOnlyHint: false` and `idempotentHint: true`;
+the status tool is read-only. Existing price, product and competitor tools stay
+read-only, including when coverage is missing. The gateway performs no automatic
+retry after an uncertain request response.
 
 Successful `structuredContent` is the unchanged REST schema-version-1 envelope:
 `{schema_version:1,data:{...},usage:{...}}`. Human text cites dates and sources
@@ -187,8 +222,10 @@ PYTHONPATH=src:../verifiedpricing-client/src PYTHONDONTWRITEBYTECODE=1 \
   python3 -m unittest discover -s tests -v
 ```
 
-Without the SDK, protocol tests explicitly skip. These tests exercise local OS
-pipes and fixture responses. They do not verify the separately hosted service.
+The hosted tests require the pinned `hosted` dependencies and exercise genuine
+SDK HTTP over ASGI and local TCP, plus the existing stdio OS-pipe checks. API
+responses use fixtures; live account quotas and production routing require their
+own acceptance. OAuth and directory listing remain outside this package.
 
 MIT covers client/gateway code only. Data and vendor source content have separate
 terms; retain citations, original dates and trust qualifiers. See
