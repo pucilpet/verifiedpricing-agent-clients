@@ -8,6 +8,10 @@ Bundle **v0.3.2** pairs **verifiedpricing-client 0.1.3** with
 on Linux and macOS. Self-hosted HTTP extras require Python 3.11+.
 Connecting to the hosted endpoint requires no Python installation.
 
+## Start with a useful result
+
+[Run your first source-backed pricing check](docs/first-pricing-check.md): connect the hosted endpoint, use a copyable prompt, and get a dated answer with sources and explicit unknowns. No local installation is needed for this route.
+
 ## Get started
 
 Create your own key at [VerifiedPricing Account](https://verifiedpricing.com/account).
